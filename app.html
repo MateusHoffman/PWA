@@ -4,15 +4,20 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PWA" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <title>App PWA</title>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <main>
-    <h1>App instalado</h1>
-    <p>Este é o app PWA. A cada 1 minuto você recebe uma notificação (enquanto o app estiver aberto ou em segundo plano).</p>
-    <p id="status">Aguardando permissão...</p>
+    <h1>App PWA</h1>
+    <p>Texto de teste. Notificações a cada 1 minuto (app aberto ou em segundo plano).</p>
+    <button id="btn">Ativar notificações</button>
+    <p id="status">Toque no botão para liberar.</p>
   </main>
   <script src="/app.js"></script>
 </body>

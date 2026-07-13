@@ -1,27 +1,48 @@
 const status = document.getElementById("status");
+const btn = document.getElementById("btn");
 
-navigator.serviceWorker.register("/sw.js").then(async (reg) => {
-  let perm = Notification.permission;
-  if (perm !== "granted") {
-    perm = await Notification.requestPermission();
-  }
+const isStandalone =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  navigator.standalone === true;
 
-  if (perm !== "granted") {
-    status.textContent = "Notificações bloqueadas.";
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+
+if (!isStandalone) {
+  status.textContent =
+    "Abra este app pelo ícone da Tela de Início (não pelo Safari).";
+}
+
+btn.onclick = async () => {
+  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
+    status.textContent = "Este navegador não suporta notificações web.";
     return;
   }
 
-  status.textContent = "Notificações ativas. Próxima em ~1 min.";
+  if (!isStandalone) {
+    status.textContent =
+      "No iPhone, notificações só funcionam depois de Adicionar à Tela de Início e abrir pelo ícone.";
+    return;
+  }
+
+  const perm = await Notification.requestPermission();
+  if (perm !== "granted") {
+    status.textContent = "Permissão negada. Ative em Ajustes → Notificações.";
+    return;
+  }
+
+  const reg = await navigator.serviceWorker.ready;
+  status.textContent = "Ativas. Próxima em ~1 min.";
 
   const ping = () => {
     reg.showNotification("Teste PWA", {
-      body: "Ping a cada 1 minuto — " + new Date().toLocaleTimeString(),
+      body: "Ping — " + new Date().toLocaleTimeString(),
       icon: "/icon-192.png",
-      badge: "/icon-192.png",
     });
   };
 
-  // primeira notificação já, depois a cada 60s
   ping();
   setInterval(ping, 60_000);
-});
+  btn.disabled = true;
+};

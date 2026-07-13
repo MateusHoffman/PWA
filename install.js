@@ -1,19 +1,40 @@
 const status = document.getElementById("status");
 const btn = document.getElementById("btn");
+const iosSteps = document.getElementById("ios-steps");
 let deferredPrompt;
 
-navigator.serviceWorker.register("/sw.js");
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+const isStandalone =
+  window.matchMedia("(display-mode: standalone)").matches ||
+  navigator.standalone === true;
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("/sw.js");
+}
+
+if (isIOS) {
+  iosSteps.hidden = false;
+  btn.textContent = "Já adicionei — abrir app";
+  status.textContent = isStandalone
+    ? "App aberto pela tela inicial."
+    : "Siga os passos e abra pelo ícone da tela inicial.";
+}
 
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  status.textContent = "Pronto para instalar.";
+  btn.textContent = "Instalar app";
+  status.textContent = "Pronto para instalar (Android/Chrome).";
 });
 
 btn.onclick = async () => {
-  const perm = await Notification.requestPermission();
-  if (perm !== "granted") {
-    status.textContent = "Notificações negadas.";
+  if (isIOS) {
+    if (isStandalone) {
+      location.href = "/app.html";
+      return;
+    }
+    status.textContent =
+      "No iPhone: Compartilhar → Adicionar à Tela de Início → abrir o ícone.";
     return;
   }
 
@@ -23,11 +44,10 @@ btn.onclick = async () => {
     deferredPrompt = null;
     status.textContent =
       outcome === "accepted"
-        ? "App instalado! Abra pelo ícone na tela."
-        : "Instalação cancelada. Você ainda pode abrir /app.html";
+        ? "Instalado! Abra pelo ícone."
+        : "Cancelado. Você pode abrir o app mesmo assim.";
   } else {
-    status.textContent =
-      "Use o menu do navegador → “Adicionar à tela inicial”, depois abra o app.";
+    status.textContent = "Menu do navegador → Instalar app / Adicionar à tela.";
   }
 
   location.href = "/app.html";

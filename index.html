@@ -4,6 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#2563eb" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="PWA" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
   <title>Instalar PWA</title>
   <link rel="manifest" href="/manifest.webmanifest" />
   <link rel="stylesheet" href="/style.css" />
@@ -11,8 +15,14 @@
 <body>
   <main>
     <h1>Teste PWA</h1>
-    <p>Clique para instalar o app e liberar notificações.</p>
-    <button id="btn">Instalar app + notificações</button>
+    <p>No iPhone não existe botão automático de instalar. Use o fluxo abaixo.</p>
+    <ol id="ios-steps" hidden>
+      <li>Toque em <strong>Compartilhar</strong> (□↑)</li>
+      <li>Escolha <strong>Adicionar à Tela de Início</strong></li>
+      <li>Abra o ícone <strong>PWA</strong> na tela</li>
+      <li>Aceite as notificações dentro do app</li>
+    </ol>
+    <button id="btn">Como instalar</button>
     <p id="status"></p>
   </main>
   <script src="/install.js"></script>
