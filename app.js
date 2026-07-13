@@ -1,48 +1,78 @@
 const status = document.getElementById("status");
 const btn = document.getElementById("btn");
+const countEl = document.getElementById("count");
 
 const isStandalone =
   window.matchMedia("(display-mode: standalone)").matches ||
   navigator.standalone === true;
 
-if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("/sw.js");
+let left = 60;
+let tick = null;
+let reg = null;
+
+function render() {
+  countEl.hidden = false;
+  countEl.textContent = "Próxima em " + left + "s";
 }
 
-if (!isStandalone) {
-  status.textContent =
-    "Abra este app pelo ícone da Tela de Início (não pelo Safari).";
+async function notify() {
+  const body = "Ping — " + new Date().toLocaleTimeString("pt-BR");
+  try {
+    await reg.showNotification("Teste PWA", {
+      body,
+      icon: "/icon-192.png",
+      tag: "pwa-ping",
+      renotify: true,
+    });
+  } catch {
+    new Notification("Teste PWA", { body, icon: "/icon-192.png", tag: "pwa-ping" });
+  }
+  status.textContent = "Última notificação: " + new Date().toLocaleTimeString("pt-BR");
 }
 
-btn.onclick = async () => {
-  if (!("Notification" in window) || !("serviceWorker" in navigator)) {
-    status.textContent = "Este navegador não suporta notificações web.";
+async function start() {
+  if (!("Notification" in window)) {
+    status.textContent = "Sem suporte a notificações.";
     return;
   }
 
   if (!isStandalone) {
-    status.textContent =
-      "No iPhone, notificações só funcionam depois de Adicionar à Tela de Início e abrir pelo ícone.";
+    status.textContent = "Abra pelo ícone da Tela de Início.";
     return;
   }
 
-  const perm = await Notification.requestPermission();
+  let perm = Notification.permission;
+  if (perm !== "granted") perm = await Notification.requestPermission();
   if (perm !== "granted") {
-    status.textContent = "Permissão negada. Ative em Ajustes → Notificações.";
+    status.textContent = "Permissão negada.";
     return;
   }
 
-  const reg = await navigator.serviceWorker.ready;
-  status.textContent = "Ativas. Próxima em ~1 min.";
+  reg = await navigator.serviceWorker.register("/sw.js");
+  await navigator.serviceWorker.ready;
 
-  const ping = () => {
-    reg.showNotification("Teste PWA", {
-      body: "Ping — " + new Date().toLocaleTimeString(),
-      icon: "/icon-192.png",
-    });
-  };
+  if (tick) clearInterval(tick);
+  left = 60;
+  render();
+  await notify();
 
-  ping();
-  setInterval(ping, 60_000);
+  tick = setInterval(async () => {
+    left -= 1;
+    if (left <= 0) {
+      left = 60;
+      await notify();
+    }
+    render();
+  }, 1000);
+
+  btn.textContent = "Ativo";
   btn.disabled = true;
-};
+}
+
+btn.onclick = start;
+
+if (!isStandalone) {
+  status.textContent = "Abra pelo ícone da Tela de Início.";
+} else if (Notification.permission === "granted") {
+  start();
+}
